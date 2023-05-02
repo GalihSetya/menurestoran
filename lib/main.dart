@@ -56,7 +56,7 @@ class _MenuRestoranState extends State<MenuRestoran> {
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is disposed.
+    // Membersihkan kontroler saan widged disposed
     hargaController.dispose();
     super.dispose();
   }
@@ -78,6 +78,7 @@ class _MenuRestoranState extends State<MenuRestoran> {
             ],
           ),
         ),
+        // Membuat Body untuk daftar menu
         body: ListView.builder(
           itemCount: daftarMenu.length,
           itemBuilder: (BuildContext context, int index) {
@@ -85,17 +86,21 @@ class _MenuRestoranState extends State<MenuRestoran> {
               // tambahkan widget Card pada daftar menu
               child: Column(
                 children: [
+                  // Darftar menu diambil dari index yang sudah dibuat
                   Image.network(
+                    // menambahkan gambar dengan mengambil dari internet menggunakan Image.network
                     daftarMenu[index]['gambar'],
                     height: 200,
                     width: double.infinity,
                     fit: BoxFit.cover,
                   ),
                   ListTile(
+                    // Menggunakan listTile untuk menampilkan nama menu dan harga
                     title: Text(daftarMenu[index]['nama']),
                     subtitle: Text('Rp ${daftarMenu[index]['harga']}'),
                   ),
                   ButtonBar(
+                    // Menambahkan ButtonBar untuk membuat tombol edit dan detail
                     children: [
                       // tambahkan tombol edit pada harga
                       TextButton(
@@ -106,6 +111,7 @@ class _MenuRestoranState extends State<MenuRestoran> {
                               return AlertDialog(
                                 title: Text('Masukkan Harga'),
                                 content: TextField(
+                                  // Membuat editor teks untuk menginput angka harga
                                   controller: hargaController,
                                   keyboardType: TextInputType.number,
                                   decoration: InputDecoration(
@@ -115,6 +121,7 @@ class _MenuRestoranState extends State<MenuRestoran> {
                                 actions: [
                                   TextButton(
                                     onPressed: () {
+                                      // navigator untuk pindah ke halaman utama jika tombol Batal di tekan
                                       Navigator.of(context).pop();
                                     },
                                     child: Text('BATAL'),
@@ -126,6 +133,7 @@ class _MenuRestoranState extends State<MenuRestoran> {
                                         daftarMenu[index]['harga'] =
                                             int.parse(hargaController.text);
                                       });
+                                      // navigator untuk pindah ke halaman utama jika tombol Simpan di tekan
                                       Navigator.of(context).pop();
                                     },
                                     child: Text('SIMPAN'),
@@ -144,6 +152,7 @@ class _MenuRestoranState extends State<MenuRestoran> {
                       // tambahkan tombol detail pada daftar menu
                       TextButton(
                         onPressed: () {
+                          // Navigator untuk pindah kehalaman Detail
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -191,6 +200,7 @@ class DetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Scaffold untuk halaman detail
       appBar: AppBar(
         title: Text(nama),
       ),
