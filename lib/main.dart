@@ -1,188 +1,191 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-void main() => runApp(MenuRestoran());
+void main() async {
+  // Memastikan inisialisasi Flutter telah selesai dan Firebase telah diinisialisasi
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(MyApp());
+}
 
+// Aplikasi utama
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'menurestoran',
+      home: LoginScreen(),
+    );
+  }
+}
+
+// Halaman menu restoran
 class MenuRestoran extends StatefulWidget {
   @override
   _MenuRestoranState createState() => _MenuRestoranState();
 }
 
 class _MenuRestoranState extends State<MenuRestoran> {
-  // deklarasi daftar menu dengan menggunakan List<Map>
-  final List<Map<String, dynamic>> daftarMenu = [
-    {
-      'nama': 'Bean & Sausage Hotpot',
-      'harga': 25000,
-      'gambar':
-          'https:\/\/www.themealdb.com\/images\/media\/meals\/vxuyrx1511302687.jpg',
-      'deskripsi':
-          'This super-easy family favourite can be on the table in around half an hour - perfect for a mid-week meal!',
-    },
-    {
-      'nama': 'Braised Beef Chilli',
-      'harga': 20000,
-      'gambar':
-          'https:\/\/www.themealdb.com\/images\/media\/meals\/uuqvwu1504629254.jpg',
-      'deskripsi':
-          'A cozy pot of slowly Braised Beef Chili is the ultimate winter meal! Simply simmer hearty stew meat or chuck roast with peppers, tomatoes, beans, & smoky spices, resulting in a fall-apart-tender, full-flavored chuck roast chili.'
-    },
-    {
-      'nama': 'French Omelette',
-      'harga': 30000,
-      'gambar':
-          'https:\/\/www.themealdb.com\/images\/media\/meals\/yvpuuy1511797244.jpg',
-      'deskripsi':
-          'A true French omelette, or omelet as we Americans call it, is just eggs and butter, no filling. The egg is folded for a soft, tender texture.'
-    },
-    {
-      'nama': 'Krispy Kreme Donut',
-      'harga': 35000,
-      'gambar':
-          'https:\/\/www.themealdb.com\/images\/media\/meals\/4i5cnx1587672171.jpg',
-      'deskripsi':
-          'Krispy Kreme is best known for fresh, glazed, yeast-raised doughnuts, especially the "Krispy Kreme Original Glazed," its first and best-known doughnut. All of its doughnuts are made from a secret recipe that has been in the company since 1937.'
-    },
-    {
-      'nama': 'Piri-piri chicken and slaw',
-      'harga': 15000,
-      'gambar':
-          'https:\/\/www.themealdb.com\/images\/media\/meals\/hglsbl1614346998.jpg',
-      'deskripsi':
-          'https:\/\/www.themealdb.com\/images\/media\/meals\/hglsbl1614346998.jpg'
-    },
-  ];
-
+  // Menyimpan daftar menu
+  List<Map<String, dynamic>> daftarMenu = [];
+  // Controller untuk input harga
   final hargaController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    // Memanggil fungsi fetchData saat aplikasi dimulai
+    fetchData();
+  }
+
+  @override
   void dispose() {
-    // Membersihkan kontroler saan widged disposed
+    // Membuang controller saat widget dihapus
     hargaController.dispose();
     super.dispose();
   }
 
+  // Mengambil data menu dari API
+  Future<void> fetchData() async {
+    final response = await http.get(
+        // Melakukan HTTP GET request ke API
+        Uri.parse('https://www.themealdb.com/api/json/v1/1/search.php?f=e'));
+
+    if (response.statusCode == 200) {
+      // Mendecode data JSON
+      final data = jsonDecode(response.body);
+      // Mendapatkan daftar makanan dari data
+      final meals = data['meals'];
+
+      if (meals != null) {
+        setState(() {
+          // Mengubah data menu menjadi list of maps
+          daftarMenu = meals
+              .map<Map<String, dynamic>>((meal) => {
+                    // Mengambil nama makanan dari API
+                    'nama': meal['strMeal'],
+                    // Set harga dengan 0
+                    'harga': 0,
+                    // Mengambil URL gambar makanan dari API
+                    'gambar': meal['strMealThumb'] ?? '',
+                    // Mengambil deskripsi makanan dari API
+                    'deskripsi': meal['strInstructions'],
+                  })
+              // Mengubah daftar makanan menjadi list yang dapat digunakan oleh ListView
+              .toList();
+        });
+      }
+    } else {
+      // Menampilkan pesan error jika gagal mengambil data dari API
+      throw Exception('Failed to fetch data from API');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Menu Restoran',
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          // Tengahkan judul dan tambahkan icon restoran
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.restaurant),
-              SizedBox(width: 10),
-              Text('Menu Restoran'),
-            ],
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        // Tengahkan judul dan tambahkan icon restoran
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.restaurant),
+            SizedBox(width: 10),
+            Text('Menu Restoran'),
+          ],
         ),
-        // Membuat Body untuk daftar menu
-        body: ListView.builder(
-          itemCount: daftarMenu.length,
-          itemBuilder: (BuildContext context, int index) {
-            return Card(
-              // tambahkan widget Card pada daftar menu
-              child: Column(
-                children: [
-                  // Darftar menu diambil dari index yang sudah dibuat
-                  Image.network(
-                    // menambahkan gambar dengan mengambil dari internet menggunakan Image.network
-                    daftarMenu[index]['gambar'],
-                    height: 200,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
-                  ListTile(
-                    // Menggunakan listTile untuk menampilkan nama menu dan harga
-                    title: Text(daftarMenu[index]['nama']),
-                    subtitle: Text('Rp ${daftarMenu[index]['harga']}'),
-                  ),
-                  ButtonBar(
-                    // Menambahkan ButtonBar untuk membuat tombol edit dan detail
-                    children: [
-                      // tambahkan tombol edit pada harga
-                      TextButton(
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text('Masukkan Harga'),
-                                content: TextField(
-                                  // Membuat editor teks untuk menginput angka harga
-                                  controller: hargaController,
-                                  keyboardType: TextInputType.number,
-                                  decoration: InputDecoration(
-                                    hintText: 'Harga',
-                                  ),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      // navigator untuk pindah ke halaman utama jika tombol Batal di tekan
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text('BATAL'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      // ubah harga pada daftar menu
-                                      setState(() {
-                                        daftarMenu[index]['harga'] =
-                                            int.parse(hargaController.text);
-                                      });
-                                      // navigator untuk pindah ke halaman utama jika tombol Simpan di tekan
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text('SIMPAN'),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                        child: Icon(Icons.edit),
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(
-                              Colors.white.withOpacity(0.4)),
-                        ),
-                      ),
-                      // tambahkan tombol detail pada daftar menu
-                      TextButton(
-                        onPressed: () {
-                          // Navigator untuk pindah kehalaman Detail
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => DetailScreen(
-                                gambar: daftarMenu[index]['gambar'],
-                                nama: daftarMenu[index]['nama'],
-                                harga: daftarMenu[index]['harga'],
-                                deskripsi: daftarMenu[index]['deskripsi'],
-                              ),
-                            ),
-                          );
-                        },
-                        child: Text('DETAIL'),
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(
-                              Colors.white.withOpacity(0.4)),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+      ),
+      // Membuat Body untuk daftar menu
+      body: ListView.builder(
+        itemCount: daftarMenu.length,
+        itemBuilder: (BuildContext context, int index) {
+          return Card(
+            // tambahkan widget Card pada daftar menu
+            child: ListTile(
+              leading: Image.network(
+                // Menampilkan gambar makanan yang diambil dari API menggunakan Image.network
+                daftarMenu[index]['gambar'],
+                height: 100,
+                width: 100,
+                fit: BoxFit.cover,
               ),
-            );
-          },
-        ),
+              // Menampilkan nama makanan diambil dari API
+              title: Text(daftarMenu[index]['nama']),
+              subtitle: Text('Rp ${daftarMenu[index]['harga']}'),
+              // Menambahkan ButtonBar untuk membuat tombol edit dan detail
+              trailing: IconButton(
+                icon: Icon(Icons.edit),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Edit Harga'),
+                        content: TextField(
+                          // Membuat editor teks untuk menginput angka harga
+                          controller: hargaController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            hintText: 'Harga',
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              // navigator untuk pindah ke halaman utama jika tombol Batal di tekan
+                              Navigator.of(context).pop();
+                            },
+                            child: Text('BATAL'),
+                          ),
+                          TextButton(
+                            // ubah harga pada daftar menu
+                            onPressed: () {
+                              setState(() {
+                                daftarMenu[index]['harga'] =
+                                    int.parse(hargaController.text);
+                              });
+                              // navigator untuk pindah ke halaman utama jika tombol Simpan di tekan
+                              Navigator.of(context).pop();
+                            },
+                            child: Text('SIMPAN'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
+              onTap: () {
+                // Navigator untuk pindah kehalaman Detail
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DetailScreen(
+                      // Mengirim URL gambar ke layar detail
+                      gambar: daftarMenu[index]['gambar'],
+                      // Mengirim nama makanan ke layar detail
+                      nama: daftarMenu[index]['nama'],
+                      // Mengirim harga makanan ke layar detail
+                      harga: daftarMenu[index]['harga'],
+                      // Mengirim deskripsi makanan ke layar detail
+                      deskripsi: daftarMenu[index]['deskripsi'],
+                    ),
+                  ),
+                );
+              },
+            ),
+          );
+        },
       ),
     );
   }
 }
 
+// Halaman detail menu
 class DetailScreen extends StatelessWidget {
   final String gambar;
   final String nama;
@@ -199,33 +202,247 @@ class DetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Scaffold untuk halaman detail
     return Scaffold(
-      // Scaffold untuk halaman detail
       appBar: AppBar(
+        // Menampilkan nama makanan pada AppBar
         title: Text(nama),
       ),
-      body: SingleChildScrollView(
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
         child: Column(
-          // tambahkan gambar dan deskripsi pada halaman detail
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.network(
-              gambar,
-              height: 300,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Rp $harga',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                deskripsi,
-                textAlign: TextAlign.justify,
+            SizedBox(
+              width: MediaQuery.of(context).size.width,
+              // Mengatur tinggi gambar sesuai lebar layar
+              height: MediaQuery.of(context).size.width * 0.6,
+              child: Image.network(
+                // Menampilkan gambar makanan
+                gambar,
+                fit: BoxFit.cover,
               ),
+            ),
+            SizedBox(height: 16.0),
+            Text(
+              // Menampilkan harga makanan
+              'Harga: Rp $harga',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 16.0),
+            Text(
+              // Menampilkan label "Deskripsi"
+              'Deskripsi:',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 8.0),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Text(
+                  // Menampilkan deskripsi makanan
+                  deskripsi,
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Halaman login
+class LoginScreen extends StatefulWidget {
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  // Fungsi untuk melakukan login pengguna
+  Future<void> loginUser() async {
+    try {
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text,
+        password: passwordController.text,
+      );
+
+      // Jika login berhasil, navigasikan pengguna ke halaman utama MenuRestoran
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MenuRestoran(),
+        ),
+      );
+    } catch (e) {
+      // Jika login gagal, tampilkan pesan kesalahan
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Error'),
+            content: Text(e.toString()),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Login'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextFormField(
+              controller: emailController,
+              decoration: InputDecoration(
+                labelText: 'Email',
+              ),
+            ),
+            TextFormField(
+              controller: passwordController,
+              decoration: InputDecoration(
+                labelText: 'Password',
+              ),
+              obscureText: true,
+            ),
+            SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: () {
+                loginUser();
+              },
+              child: Text('Login'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => RegisterScreen()),
+                );
+              },
+              child: Text('Registrasi'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Halaman registrasi
+class RegisterScreen extends StatefulWidget {
+  @override
+  _RegisterScreenState createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  // Fungsi untuk melakukan registrasi pengguna
+  Future<void> registerUser() async {
+    try {
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailController.text,
+        password: passwordController.text,
+      );
+
+      // Jika registrasi berhasil, tampilkan pesan sukses
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Registrasi Berhasil'),
+            content: Text('Akun berhasil didaftarkan.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    } catch (e) {
+      // Jika registrasi gagal, tampilkan pesan kesalahan
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Error'),
+            content: Text(e.toString()),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Registrasi'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextFormField(
+              controller: emailController,
+              decoration: InputDecoration(
+                labelText: 'Email',
+              ),
+            ),
+            TextFormField(
+              controller: passwordController,
+              decoration: InputDecoration(
+                labelText: 'Password',
+              ),
+              obscureText: true,
+            ),
+            SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: () {
+                registerUser();
+              },
+              child: Text('Registrasi'),
             ),
           ],
         ),

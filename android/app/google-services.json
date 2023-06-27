@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "541628732798",
+    "project_id": "fir-flutter-codelab-a3b84",
+    "storage_bucket": "fir-flutter-codelab-a3b84.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:541628732798:android:70eebb5b12b2e5f5d24f2f",
+        "android_client_info": {
+          "package_name": "com.example.gtk_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "541628732798-nlttf9nmsbj5uv8cvd8758v61lhua7ua.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfJcTTkXfauNJu6sMrETjidusUgqegjXA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "541628732798-nlttf9nmsbj5uv8cvd8758v61lhua7ua.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "541628732798-f6e5ejqfljd0q0dtdtornitaab721t57.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.gtkFlutter.RunnerTests"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:541628732798:android:9f2a23e65fbaba0cd24f2f",
+        "android_client_info": {
+          "package_name": "com.example.menurestoran"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "541628732798-nlttf9nmsbj5uv8cvd8758v61lhua7ua.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfJcTTkXfauNJu6sMrETjidusUgqegjXA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "541628732798-nlttf9nmsbj5uv8cvd8758v61lhua7ua.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "541628732798-f6e5ejqfljd0q0dtdtornitaab721t57.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.gtkFlutter.RunnerTests"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
